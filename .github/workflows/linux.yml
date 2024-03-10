@@ -1,0 +1,35 @@
+name: Linux tests
+
+on:
+  push:
+    branches:
+      - "*"
+      - "!sapling-pr-archive-*"
+
+jobs:
+  build_test_ubuntu:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y gcc
+
+      - name: Fetch Buck2
+        uses: zadlg/buck2-github-composite-action@v2
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch Buck2 prelude cell and init Buck2 workspace.
+        run: |
+          git clone --depth=1 'https://github.com/facebook/buck2-prelude.git' prelude
+
+      - name: Run full build
+        run: |
+          buck2 build ...
+
+      - name: Check that documentation is synced
+        run: |
+          buck2 run docs:generate
